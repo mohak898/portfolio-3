@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mohak Gupta — A Journey Through Middle-earth</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ── CURSOR ── -->
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- ── CANVAS LAYERS ── -->
+  <canvas id="ember-canvas"></canvas>
+  <canvas id="weather-canvas"></canvas>
+
+  <!-- ── OVERLAY LAYERS ── -->
+  <div id="grain"></div>
+  <div id="vignette"></div>
+  <div id="lightning"></div>
+  <div id="flash"></div>
+  <div id="progress"></div>
+
+  <!-- ════════════════════════════════
+       RING EASTER EGG OVERLAY
+       Trigger: click "Touch the Ring" hint
+       or type the Konami code ↑↑↓↓←→←→BA
+  ════════════════════════════════ -->
+  <div id="ring-overlay" role="dialog" aria-modal="true" aria-label="One Ring inscription">
+    <svg class="big-ring-svg" width="150" height="150" viewBox="0 0 150 150" fill="none" aria-hidden="true">
+      <circle cx="75" cy="75" r="68" stroke="#c9a84c" stroke-width="1.2" stroke-dasharray="7 4" opacity=".45"/>
+      <circle cx="75" cy="75" r="54" stroke="#c9a84c" stroke-width="2.5" opacity=".75"/>
+      <circle cx="75" cy="75" r="40" stroke="#c9a84c" stroke-width=".8" stroke-dasharray="3 5" opacity=".35"/>
+      <circle cx="75" cy="75" r="9"  fill="#c9a84c" opacity=".65"/>
+    </svg>
+    <p class="ring-inscription">
+      One Ring to rule them all,<br>
+      One Ring to find them,<br>
+      One Ring to bring them all,<br>
+      and in the darkness bind them.
+    </p>
+    <div class="ring-close" id="ring-close" role="button" tabindex="0">× Flee the fires of Mount Doom</div>
+  </div>
+
+  <!-- ════════════════════════════════
+       PRELOADER — Palantír + Oath verse
+  ════════════════════════════════ -->
+  <div id="preloader" role="dialog" aria-label="Portfolio loading screen">
+
+    <!-- Palantír canvas orb -->
+    <div id="palantir-wrap" aria-hidden="true">
+      <div class="palantir-glow"></div>
+      <canvas id="palantir-canvas" width="480" height="480"></canvas>
+      <div class="palantir-ring-anim"></div>
+
+      <!-- Tengwar inscription ring (Black Speech) -->
+      <div id="tengwar-ring">
+        <svg viewBox="0 0 270 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path id="tp" d="M135,135 m-112,0 a112,112 0 1,1 224,0 a112,112 0 1,1 -224,0" fill="none"/>
+          <text font-family="'EB Garamond',serif" font-size="9.5" fill="#c9a84c"
+                opacity=".5" letter-spacing="3.2" font-style="italic">
+            <textPath href="#tp" startOffset="0%">
+              ✦ ash nazg durbatulûk ✦ ash nazg gimbatul ✦ ash nazg thrakatulûk ✦ agh burzum-ishi krimpatul ✦
+            </textPath>
+          </text>
+        </svg>
+      </div>
+    </div>
+
+    <p class="pre-title">A Journey Through Middle-earth</p>
+    <p class="pre-sub">Mohak Gupta · Portfolio · 2026</p>
+    <div id="oath-verse" aria-live="polite"><span class="oath-cursor"></span></div>
+    <div class="pre-cta" id="pre-cta" role="button" tabindex="0">Enter Middle-earth</div>
+  </div>
+
+  <!-- ── AUDIO BUTTON ── -->
+  <div id="audio-btn" class="muted" role="button" tabindex="0" aria-label="Toggle ambient audio">
+    <div class="audio-icon" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <span id="audio-label">The Shire</span>
+  </div>
+  <div id="now-loc" aria-live="polite"></div>
+
+  <!-- ── SECTION COMPASS ── -->
+  <nav id="compass" aria-label="Section navigation">
+    <div class="cdot active" data-s="hero"        role="button" tabindex="0">The Shire</div>
+    <div class="cdot"        data-s="shire"        role="button" tabindex="0">Origins</div>
+    <div class="cdot"        data-s="rivendell"    role="button" tabindex="0">Rivendell</div>
+    <div class="cdot"        data-s="fellowship"   role="button" tabindex="0">The Fellowship</div>
+    <div class="cdot"        data-s="pelennor"     role="button" tabindex="0">Pelennor</div>
+    <div class="cdot"        data-s="grey-havens"  role="button" tabindex="0">Grey Havens</div>
+  </nav>
+
+  <!-- ── MAP SIDEBAR (hover to reveal) ── -->
+  <aside id="map-sidebar" aria-label="Middle-earth map">
+    <div class="map-tab">Map</div>
+    <div class="map-inner">
+      <div class="map-title">Middle-earth</div>
+      <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path class="map-region" id="mr-hero"       d="M20,120 C18,108 22,95 30,88 C38,82 48,80 55,86 C62,92 60,105 55,115 C50,125 35,128 20,120Z"/>
+        <path class="map-region" id="mr-shire"      d="M15,108 C10,100 12,88 20,82 C28,76 40,76 46,82 C52,88 50,100 44,108 C38,116 20,116 15,108Z"/>
+        <path class="map-region" id="mr-rivendell"  d="M55,75 C52,65 58,55 66,50 C74,45 84,48 88,56 C92,64 88,76 80,80 C72,84 58,85 55,75Z"/>
+        <path class="map-region" id="mr-fellowship" d="M60,45 C55,34 60,22 70,18 C80,14 92,18 96,28 C100,38 95,50 86,54 C77,58 65,56 60,45Z"/>
+        <path class="map-region" id="mr-pelennor"   d="M80,90 C86,82 96,80 104,85 C112,90 114,102 108,110 C102,118 90,118 84,110 C78,102 74,98 80,90Z"/>
+        <path class="map-region" id="mr-grey"       d="M8,70 C5,60 8,48 16,43 C24,38 35,40 40,48 C45,56 42,68 34,74 C26,80 11,80 8,70Z"/>
+        <path class="map-path" d="M35,100 Q50,88 62,75 Q74,62 78,48"/>
+        <path class="map-path" d="M32,82 Q40,76 55,75"/>
+        <circle class="map-dot" id="md-hero"       cx="38"  cy="104" r="2"/>
+        <circle class="map-dot" id="md-shire"      cx="30"  cy="95"  r="2"/>
+        <circle class="map-dot" id="md-rivendell"  cx="72"  cy="65"  r="2"/>
+        <circle class="map-dot" id="md-fellowship" cx="78"  cy="38"  r="2"/>
+        <circle class="map-dot" id="md-pelennor"   cx="96"  cy="100" r="2"/>
+        <circle class="map-dot" id="md-grey"       cx="24"  cy="60"  r="2"/>
+        <text class="map-label" id="ml-hero"       x="28"   y="117" text-anchor="middle">The Shire</text>
+        <text class="map-label" id="ml-shire"      x="30"   y="88"  text-anchor="middle">Origins</text>
+        <text class="map-label" id="ml-rivendell"  x="72"   y="76"  text-anchor="middle">Rivendell</text>
+        <text class="map-label" id="ml-fellowship" x="80"   y="28"  text-anchor="middle">Fellowship</text>
+        <text class="map-label" id="ml-pelennor"   x="96"   y="124" text-anchor="middle">Pelennor</text>
+        <text class="map-label" id="ml-grey"       x="24"   y="52"  text-anchor="middle">Grey Havens</text>
+      </svg>
+    </div>
+  </aside>
+
+  <!-- Three.js background canvas -->
+  <canvas id="bg" aria-hidden="true"></canvas>
+
+  <!-- ════════════════════════════════
+       MAIN SCROLL CONTENT
+  ════════════════════════════════ -->
+  <div id="scroll-container">
+
+    <!-- ══ HERO ══ -->
+    <section id="hero">
+      <p class="hero-eye">Hardware · Software · Spatial Computing</p>
+      <h1 class="hero-name">Mohak<br>Gupta</h1>
+      <p class="hero-hl">Hardware &amp; Software Innovator · Vibecoder</p>
+      <p class="hero-sub">
+        Engineering the future of embedded systems, VR, and agentic AI —
+        B.E. Electronics &amp; Communication, Bangalore Institute of Technology, Class of 2029.
+      </p>
+      <p class="ring-click-hint" id="ring-click-hint" role="button" tabindex="0">✦ Touch the Ring ✦</p>
+      <div class="scroll-hint" aria-hidden="true">
+        <span class="sh-text">The road goes ever on</span>
+        <div class="sh-line"></div>
+      </div>
+      <div class="rune-footer" id="rf-hero"></div>
+    </section>
+
+    <!-- ══ THE SHIRE — About ══ -->
+    <section id="shire">
+      <div class="loc-badge"><span class="loc-name">The Shire · Origins</span></div>
+      <p class="epigraph"
+         data-quote='"It&apos;s a dangerous business, going out your door. You step onto the road, and if you don&apos;t keep your feet, there&apos;s no knowing where you might be swept off to."'>
+      </p>
+
+      <div class="shire-grid">
+        <div class="about-body">
+          <p>
+            <span class="big-drop">I</span> build at the intersection where hardware meets
+            intelligence — writing firmware for sensors in the morning, orchestrating AI agents
+            in the afternoon, and shipping something new by evening.
+          </p>
+          <p>
+            My method is <strong>vibecoding</strong>: using AI tools like <em>Claude Code</em>,
+            <em>Cursor</em>, and <em>Antigravity</em> as force multipliers — describing
+            architectures in natural language, letting AI scaffold the implementation, then
+            shaping the output with precision. The result is a 10× iteration speed without
+            sacrificing the quality of craft.
+          </p>
+          <p>
+            As <strong>Hardware Lead</strong> at <strong>HIKITY</strong>, I wear three hats:
+            building the physical product stack, shipping features on the software side, and
+            crafting the story that brings both to the world.
+          </p>
+
+          <!-- Badges row -->
+          <div class="about-badges">
+            <div class="hikity-badge">HIKITY · Core Member · Hardware Lead</div>
+            <!-- ↓ Replace href with path to your actual resume file -->
+            <a href="https://drive.google.com/file/d/1zgnq0H7i_Gd8cjpnEckm2g3CYVsPmIiV/view?usp=sharing" class="clink clink--resume" download target="_blank" class="resume-badge" download target="_blank">
+              ↓ Download Resume
+            </a>
+          </div>
+        </div>
+
+        <!-- ── PHOTO FRAME ──
+             Place your photo at: assets/mohak.jpg
+             Recommended: square crop, min 400×400px
+        -->
+        <div id="photo-frame">
+          <div class="photo-ring-outer"></div>
+          <div class="photo-ring-inner"></div>
+          <img
+            src="assets/mohak.jpg"
+            alt="Mohak Gupta"
+            class="photo-img"
+            id="photo-img"
+          />
+          <!-- Fallback shown when photo not found -->
+          <div class="photo-fallback" id="photo-fallback">
+            <span>MG</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rune-footer" id="rf-shire"></div>
+    </section>
+
+    <!-- ══ RIVENDELL — Skills ══ -->
+    <section id="rivendell">
+      <div class="loc-badge"><span class="loc-name">Rivendell · The Council of Abilities</span></div>
+      <p class="epigraph"
+         data-quote='"Here in Rivendell there live still some of his chief foes: the Elven-wise, lords of the Eldar."'>
+      </p>
+      <h2 class="skills-hed">The Arsenal</h2>
+
+      <!-- Fellowship archetype cards -->
+      <div id="fellowship-cards">
+        <div class="member-card">
+          <div class="mc-shimmer"></div>
+          <span class="mc-rune">⚙️</span>
+          <div class="mc-class">The Smith</div>
+          <div class="mc-name">Hardware Artificer</div>
+          <div class="mc-trait">Forges circuits where silicon meets intention</div>
+        </div>
+        <div class="member-card">
+          <div class="mc-shimmer"></div>
+          <span class="mc-rune">🤖</span>
+          <div class="mc-class">The Wizard</div>
+          <div class="mc-name">AI Orchestrator</div>
+          <div class="mc-trait">Commands agents as Gandalf commands eagles</div>
+        </div>
+        <div class="member-card">
+          <div class="mc-shimmer"></div>
+          <span class="mc-rune">✦</span>
+          <div class="mc-class">The Elf</div>
+          <div class="mc-name">Interface Weaver</div>
+          <div class="mc-trait">Crafts experiences of impossible beauty</div>
+        </div>
+        <div class="member-card">
+          <div class="mc-shimmer"></div>
+          <span class="mc-rune">⚔️</span>
+          <div class="mc-class">The Ranger</div>
+          <div class="mc-name">Rapid Deployer</div>
+          <div class="mc-trait">Strikes fast, ships faster, leaves no bugs behind</div>
+        </div>
+      </div>
+
+      <!-- Skill pillars -->
+      <div class="pillars">
+        <div class="pillar">
+          <span class="pillar-rune">⚙️</span>
+          <div class="pillar-cat">Hardware &amp; Embedded</div>
+          <ul class="pillar-list">
+            <li>Sensor fusion &amp; IMU integration</li>
+            <li>Flex sensor calibration &amp; signal conditioning</li>
+            <li>Custom hardware fabrication</li>
+            <li>IoT architectures &amp; edge computing</li>
+            <li>Embedded firmware &amp; prototyping</li>
+            <li>VR peripheral design</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <span class="pillar-rune">🤖</span>
+          <div class="pillar-cat">Software &amp; AI</div>
+          <ul class="pillar-list">
+            <li>Vibecoding — AI-assisted rapid development</li>
+            <li>Agentic AI orchestration (Claude Code, Cursor, Antigravity)</li>
+            <li>Progressive Web App development</li>
+            <li>Agentic pipeline design</li>
+            <li>Natural language to architecture translation</li>
+            <li>Rapid prototyping &amp; iteration</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <span class="pillar-rune">✦</span>
+          <div class="pillar-cat">Design &amp; UI/UX</div>
+          <ul class="pillar-list">
+            <li>High-fidelity Figma prototyping</li>
+            <li>Minimalist &amp; premium web layouts</li>
+            <li>3D asset integration (Three.js)</li>
+            <li>Scroll-driven immersive experiences</li>
+            <li>Motion design &amp; GSAP animation</li>
+            <li>Spatial computing interfaces</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rune-footer" id="rf-rivendell"></div>
+    </section>
+
+    <!-- ══ THE FELLOWSHIP — Projects ══ -->
+    <section id="fellowship">
+      <div class="loc-badge"><span class="loc-name">The Fellowship · Quests Undertaken</span></div>
+      <p class="epigraph"
+         data-quote='"The road must be trod, but it will be very hard. And neither strength nor wisdom will carry us far upon it."'>
+      </p>
+      <h2 class="sec-title">The Great Quests</h2>
+      <div class="divider"></div>
+
+      <div class="quest-list">
+        <!-- FluxGlove -->
+        <div class="quest">
+          <div class="quest-num">I</div>
+          <div>
+            <div class="quest-badge">Hardware · VR · Spatial Input</div>
+            <div class="quest-name lore-trigger">FluxGlove
+              <div class="lore-popup">
+                <div class="lore-popup-title">Lore of the FluxGlove</div>
+                Inspired by the gauntlets of ancient smiths, this glove translates the oldest
+                human tool — the hand — into the language of machines. Each flex sensor was
+                hand-calibrated over days of iteration, every µV of drift corrected in firmware
+                written at 2am.
+              </div>
+            </div>
+            <p class="quest-desc">
+              A hand-worn VR interface: custom-fabricated flex sensors map finger curvature in
+              real-time while IMU fusion tracks absolute wrist orientation — translating the full
+              complexity of human hand motion into clean digital signals. Built from scratch at
+              both PCB and firmware level, with a software layer for gesture recognition and
+              calibration drift correction.
+            </p>
+            <div class="quest-achievement">Top 12 Finish · Hardware Showcase</div>
+            <div class="quest-tags">
+              <span class="tag">Flex Sensors</span>
+              <span class="tag">IMU Fusion</span>
+              <span class="tag">VR Input</span>
+              <span class="tag">Embedded C</span>
+              <span class="tag">Custom Hardware</span>
+              <span class="tag">Gesture Recognition</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VerifyMed AI -->
+        <div class="quest">
+          <div class="quest-num">II</div>
+          <div>
+            <div class="quest-badge">Agentic AI · Healthcare · Automation</div>
+            <div class="quest-name lore-trigger">VerifyMed AI
+              <div class="lore-popup">
+                <div class="lore-popup-title">Lore of VerifyMed</div>
+                Where Rivendell's council deliberated for days, this system validates in seconds.
+                An army of AI agents that never sleeps, never tires, never misses a discrepancy
+                buried in a thousand-row compliance table.
+              </div>
+            </div>
+            <p class="quest-desc">
+              An agentic AI pipeline solving healthcare's credential-verification bottleneck.
+              The system orchestrates multiple AI agents to cross-reference, validate, and flag
+              discrepancies across fragmented provider databases — automating a process that
+              previously required entire compliance teams working across weeks.
+            </p>
+            <div class="quest-tags">
+              <span class="tag">Agentic AI</span>
+              <span class="tag">LLM Orchestration</span>
+              <span class="tag">Healthcare</span>
+              <span class="tag">Automation</span>
+              <span class="tag">Data Validation</span>
+              <span class="tag">Vibecoding</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rune-footer" id="rf-fellowship"></div>
+    </section>
+
+    <!-- ══ PELENNOR — Hackathons ══ -->
+    <section id="pelennor">
+      <div class="loc-badge"><span class="loc-name">The Fields of Pelennor · Battles Fought</span></div>
+      <p class="epigraph" data-quote='"Courage is found in unlikely places."'></p>
+      <h2 class="sec-title">The War Chronicles</h2>
+      <div class="divider"></div>
+
+      <div class="chronicle">
+        <!-- Nikshatra -->
+        <div class="battle-card">
+          <div class="battle-event">Hackathon · Technical</div>
+          <div class="battle-name">Nikshatra Hackathon</div>
+          <p class="battle-desc">
+            Competed in Bangalore's key student hackathon circuit. Built, pitched, and defended
+            a hardware-software system under time pressure — the proving ground where prototyping
+            speed meets product clarity.
+          </p>
+          <div class="battle-stats">
+            <div class="bstat"><span class="bstat-label">Speed</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="88"></div></div></div>
+            <div class="bstat"><span class="bstat-label">Craft</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="75"></div></div></div>
+            <div class="bstat"><span class="bstat-label">Pitch</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="80"></div></div></div>
+          </div>
+          <div class="battle-result">↳ Active participant · Rapid prototyping</div>
+        </div>
+
+        <!-- EY Techathon -->
+        <div class="battle-card">
+          <div class="battle-event">Global · Ernst &amp; Young</div>
+          <div class="battle-name">EY Techathon</div>
+          <p class="battle-desc">
+            Competed in EY's flagship technology competition, designing solutions to enterprise-scale
+            problems. A challenge where the brief is ambiguous, the stakes are real, and the audience
+            expects boardroom-grade thinking from a student team.
+          </p>
+          <div class="battle-stats">
+            <div class="bstat"><span class="bstat-label">Strategy</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="92"></div></div></div>
+            <div class="bstat"><span class="bstat-label">Domain</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="78"></div></div></div>
+            <div class="bstat"><span class="bstat-label">Execution</span>
+              <div class="bstat-bar"><div class="bstat-fill" data-w="85"></div></div></div>
+          </div>
+          <div class="battle-result">↳ Enterprise problem-solving · Cross-domain</div>
+        </div>
+
+        <!-- VenueSync / MAASK -->
+        <div class="battle-card maask">
+          <div>
+            <div class="battle-event">Team Project · Emergency Response</div>
+            <div class="battle-name lore-trigger">VenueSync — Team MAASK
+              <div class="lore-popup" style="width:305px">
+                <div class="lore-popup-title">Lore of VenueSync</div>
+                MAASK — the fellowship forged not in fire, but in deadline pressure. Five engineers,
+                one agentic engine, zero seconds to spare. The 800ms bifurcation threshold was born
+                on a 3am whiteboard.
+              </div>
+            </div>
+            <p class="battle-desc">
+              Co-built VenueSync — a dual-input emergency detection system for hospitality venues.
+              Combines AI surveillance over existing CCTV with a guest-initiated PWA via disposable
+              check-in credentials. An agentic bifurcation engine classifies incidents in under 800ms,
+              routing to staff or emergency services with live audio, location data, and structured
+              incident reports.
+            </p>
+            <div class="battle-stats" style="max-width:380px;margin-top:.9rem">
+              <div class="bstat"><span class="bstat-label">AI Core</span>
+                <div class="bstat-bar"><div class="bstat-fill" data-w="95"></div></div></div>
+              <div class="bstat"><span class="bstat-label">Latency</span>
+                <div class="bstat-bar"><div class="bstat-fill" data-w="98"></div></div></div>
+              <div class="bstat"><span class="bstat-label">Impact</span>
+                <div class="bstat-bar"><div class="bstat-fill" data-w="91"></div></div></div>
+            </div>
+            <div class="quest-tags" style="margin-top:.8rem">
+              <span class="tag">Agentic AI</span>
+              <span class="tag">Computer Vision</span>
+              <span class="tag">PWA</span>
+              <span class="tag">Crisis Systems</span>
+              <span class="tag">Real-time Triage</span>
+            </div>
+          </div>
+          <div class="maask-team">
+            <div class="maask-team-name">MAASK</div>
+            <div class="maask-team-sub">Core Member</div>
+          </div>
+        </div>
+      </div>
+      <div class="rune-footer" id="rf-pelennor"></div>
+    </section>
+
+    <!-- ══ GREY HAVENS — Contact ══ -->
+    <section id="grey-havens">
+      <div class="loc-badge"><span class="loc-name">The Grey Havens · Where All Journeys End</span></div>
+      <p class="epigraph" data-quote='"I will not say: do not weep; for not all tears are an evil."'></p>
+      <h2 class="havens-hed">Begin a<br>New Quest</h2>
+      <p class="havens-sub">The greatest collaborations start with a single message.</p>
+
+      <div class="contact-links">
+        <a href="mailto:gmohak898@gmail.com" class="clink">✉ Send a raven</a>
+        <a href="https://github.com/mohak898" class="clink" target="_blank" rel="noopener">⌥ GitHub</a>
+        <a href="https://linkedin.com/in/mohak-gupta-23336832b" class="clink" target="_blank" rel="noopener">⚔ LinkedIn</a>
+        <a href="https://hikity.xyz" class="clink" target="_blank" rel="noopener">⬡ HIKITY</a>
+        <!-- ↓ Replace href with path to your actual resume file -->
+        <a href="https://drive.google.com/file/d/1zgnq0H7i_Gd8cjpnEckm2g3CYVsPmIiV/view?usp=sharing" class="clink clink--resume" download target="_blank">↓ Resume</a>
+      </div>
+
+      <p class="farewell">
+        "And then, as he had always known it would, it all came to an end — and the next adventure began."
+        Hardware, software, or somewhere in between — let's build something that matters.
+      </p>
+      <div class="rune-footer" id="rf-grey"></div>
+    </section>
+
+  </div><!-- #scroll-container -->
+
+  <!-- ── CDN LIBRARIES (order matters) ── -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+  <!-- ── MAIN SCRIPT ── -->
+  <script src="js/main.js"></script>
+
+</body>
+</html>
