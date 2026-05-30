@@ -801,7 +801,20 @@ section {
    ================================================ */
 @media (max-width: 720px) {
   .shire-grid       { grid-template-columns: 1fr; gap: 2.5rem; }
-  #photo-frame      { display: none; }
+ #photo-frame {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 1.5rem;
+  order: -1;
+}
+.photo-img {
+  width: 135px;
+  height: 135px;
+}
+.photo-fallback {
+  width: 135px;
+  height: 135px;
+}
   .pillars          { grid-template-columns: 1fr; }
   .chronicle        { grid-template-columns: 1fr; }
   .battle-card.maask { grid-column: auto; grid-template-columns: 1fr; }
